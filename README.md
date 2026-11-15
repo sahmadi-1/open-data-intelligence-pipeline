@@ -2,7 +2,7 @@
 
 [![Python tests](https://github.com/sahmadi-1/open-data-intelligence-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/sahmadi-1/open-data-intelligence-pipeline/actions/workflows/ci.yml)
 
-A small, reproducible **Python, pandas and SQLite data-quality and reporting project**, created as a public engineering portfolio demonstration.
+A small, reproducible **Python, pandas, SQLite and Matplotlib data-quality and reporting project**, created as a public engineering portfolio demonstration.
 
 > The default demonstration uses **synthetic municipal service requests**. An optional, explicitly invoked real-data path uses selected public DataSF 311 records; CI never makes network calls. No proprietary source code, patient records, or trading information are used.
 
@@ -12,6 +12,7 @@ A small, reproducible **Python, pandas and SQLite data-quality and reporting pro
 - Validation, data cleaning, duplicate handling and explicit quality counts
 - Idempotent SQLite upserts and SQL aggregation
 - Reproducible JSON reporting and a simple command-line interface
+- Offline PNG charts using Matplotlib (sample volumes, closure durations and illustrative seven-day closure rates)
 - Automated tests using pytest and GitHub Actions
 
 ## Run locally
@@ -53,7 +54,7 @@ The default demonstration produces **85 input rows**, including **1 duplicate** 
 
 ## Scope and limitations
 
-Version 0.1 is a deliberate minimum viable engineering demonstration, **not a production service**. It has no cloud infrastructure, live dataset ingestion, deployed ML model or web UI. Validation rules target the described synthetic schema. Potential future improvements include a properly licensed external dataset and an explicitly evaluated forecasting baseline.
+This is a deliberate minimum viable engineering demonstration, **not a production service**. It has no cloud infrastructure, deployed ML model or web UI. Validation rules target the described synthetic schema. Potential future improvements include a properly licensed external dataset and an explicitly evaluated forecasting baseline.
 
 ## Confidentiality
 
@@ -83,5 +84,29 @@ python -m open_data_intelligence.sf311 analyze
 - Keeps records without closure outcomes but excludes them from observed resolution-time calculations.
 - Reports a seven-day closure threshold as an **illustrative descriptive metric**, not an official agency service-level agreement.
 - The slice is the *first* rows in date order within the requested window, **not a representative random sample**. Do not generalize its rates to the full population.
-- Generated CSV, SQLite and JSON files are not committed. Data may change upstream between fetches. Treat API access, real-data distributions and performance as **unverified until a successful manual download**.
+- Generated CSV, SQLite and JSON files are not committed. Data may change upstream between fetches. A Windows-based manual run on 2026-11-15 successfully fetched 1,000 historical requests (996 accepted), but covered **only 2024-09-01**, not a full month. Its rates are **not representative** of the city or a sufficiently broad timeframe for ML evaluation.
 - This version does **not** train or claim a predictive ML model. Any future prediction must use only information available at request creation, with time-based validation and careful handling of censored/unresolved requests.
+
+## Offline Matplotlib charts (v0.2.1)
+
+Once you have already fetched the optional SF311 CSV, install the visualization extra and generate PNGs **without any new network request**:
+
+```powershell
+$python = ".\.venv\Scripts\python.exe"
+& $python -m pip install -e ".[dev]"
+& $python -m open_data_intelligence.charts --input data/sf311.csv --output-dir output/charts
+```
+
+The command generates:
+
+- `output/charts/service_volume.png` — top service categories by request count.
+- `output/charts/closure_duration.png` — observed closure times grouped into interpretable duration bands, excluding missing closure outcomes.
+- `output/charts/seven_day_closure_rate.png` — observed share closed within seven days for categories with at least 10 closed cases, displaying the per-category sample size.
+
+All three plots include the observed date range and explicitly label the data as a **nonrepresentative sample**. The seven-day threshold is only an illustrative analytic cutoff, **not** an official city service-level agreement.
+
+**Important:** The verified first 1,000-record extraction spans only 2024-09-01 00:00–14:15. Do not interpret these plots as citywide trends. Before developing ML, collect data spread across multiple dates, avoid future-data leakage, and define how missing outcomes are handled.
+
+Charts are stored under the ignored `output/` directory, so raw data and generated images are **not automatically published to GitHub**. If you later publish any chart, include its sample limitations prominently.
+
+For a visualization-only installation use `python -m pip install -e ".[viz]"`.
