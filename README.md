@@ -202,6 +202,28 @@ scheduled jobs, or modifications to the original CSV/SQLite database.**
   as-at-submission feature fidelity is not established. No hyperparameter
   search, cross-validation, deployment or operational claims are made.
 
-The published code and synthetic offline tests are reproducible. **Real-data
-model metrics are intentionally not claimed until the user runs this command
-on the actual collected sample and reviews the report.**
+## Observed real-data benchmark results
+
+A manual Windows run against the downloaded **2024 multi-month DataSF 311 sample** completed successfully with **27 passing tests**. The extract contains 6,000 raw cases, of which 5,967 passed quality checks. Of those accepted cases, 154 had unknown closure outcomes and were **excluded** from supervised training and evaluation, leaving 5,813 labeled cases.
+
+| Fixed chronological split | Labeled cases | Within 7 days | After 7 days | Sampled request days |
+| --- | ---: | ---: | ---: | ---: |
+| Train: Jan–Sep 2024 | 4,338 | 3,976 | 362 | 18 |
+| Holdout: Oct–Dec 2024 | 1,475 | 1,300 | 175 | 6 |
+
+Holdout performance (positive class = **closed after seven days**):
+
+| Metric | Majority-class baseline | Balanced logistic regression |
+| --- | ---: | ---: |
+| Overall accuracy | **88.14%** | 81.56% |
+| Balanced accuracy | 50.00% | **82.62%** |
+| Late-class precision | 0.00% | **37.60%** |
+| Late-class recall | 0.00% | **84.00%** |
+| Late-class F1 | 0.0000 | **0.5194** |
+
+**Holdout confusion matrix:** Logistic regression correctly identified 147 of 175 late closures, missed 28, falsely flagged 244 on-time cases, and correctly recognized 1,056 on-time cases. The majority baseline always predicted on-time, missing all 175 late closures.
+
+**Interpretation:** Logistic regression improves *balanced accuracy and late-case detection* at the expense of overall accuracy and many false positives. **It is not universally better, calibrated for operational deployment, or representative of San Francisco's overall service performance.** These numbers describe a small, purposely sampled retrospective benchmark only. Dataset rows are drawn from the earliest requests on two fixed dates per month, there is only one chronological holdout with six sampled days, unresolved cases are excluded, and the public export may reflect post-submission field edits. No business benefit or deployment readiness is claimed.
+
+The comparison chart is generated locally at `output/ml/benchmark_comparison.png`; it is **not yet committed** to this repository. The JSON report remains local at `output/ml/benchmark.json`. Neither file nor raw data is uploaded automatically.
+
