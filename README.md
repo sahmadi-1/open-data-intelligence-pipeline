@@ -164,7 +164,44 @@ dataset may be revised between runs. No personal addresses, free text, names,
 or precise coordinates are requested. A failed download leaves previous CSV
 and manifest outputs untouched; generated records and charts stay outside Git.
 
-**ML remains pending.** First examine time coverage, class balance, missing
-closures, and a chronological holdout. Any future classifier must use only
-features known at request creation, compare to a baseline, and qualify its
-claims.
+**ML benchmark added in v0.4.** See the section below for its assumptions and limits.
+
+## Retrospective ML benchmark (v0.4)
+
+The optional benchmark trains a **logistic regression classifier** and compares it
+with a **majority-class DummyClassifier** on your already-downloaded 2024 multi-month
+sample. Its illustrative target is whether an observed request closed **after
+seven days**. This is *not* an official service-level agreement.
+
+~~~powershell
+git pull --ff-only
+$python = ".\.venv\Scripts\python.exe"
+& $python -m pip install -e ".[dev]"
+& $python -m pytest -q
+& $python -m open_data_intelligence.ml_benchmark
+Start-Process .\output\ml\benchmark_comparison.png
+~~~
+
+This reads the local `data/sf311_multimonth.csv` only. It writes metrics to
+`output/ml/benchmark.json` and a Matplotlib comparison to
+`output/ml/benchmark_comparison.png`. **No API calls, model deployment,
+scheduled jobs, or modifications to the original CSV/SQLite database.**
+
+- **Chronological split:** requests before 2024-10-01 for training; requests on
+  or after 2024-10-01 for a fixed holdout (October–December).
+- **Features:** service name, subtype, district, request hour and weekday.
+  Request ID, actual closure duration and closure date are **not predictors**.
+- **Labels:** missing closure outcomes are **excluded**, not assumed on-time.
+  The benchmark refuses to train if either split lacks sufficient observations
+  and examples of each class.
+- **Evaluation:** accuracy, balanced accuracy, precision/recall/F1 for the
+  **late-closure** class, and an explicit confusion matrix.
+- **Limitations:** purposive sampling of the first requests on just two days
+  per month; citywide/general performance cannot be inferred. Historical
+  categorical values may have been edited after submission, so true
+  as-at-submission feature fidelity is not established. No hyperparameter
+  search, cross-validation, deployment or operational claims are made.
+
+The published code and synthetic offline tests are reproducible. **Real-data
+model metrics are intentionally not claimed until the user runs this command
+on the actual collected sample and reviews the report.**
