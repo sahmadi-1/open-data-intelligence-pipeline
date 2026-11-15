@@ -15,6 +15,26 @@ A small, reproducible **Python, pandas, SQLite and Matplotlib data-quality and r
 - Offline PNG charts using Matplotlib (sample volumes, closure durations and illustrative seven-day closure rates)
 - Automated tests using pytest and GitHub Actions
 
+## Data visualizations — real-world 311 sample
+
+These PNG charts were generated with **pandas and Matplotlib** from a bounded, chronological extract of [San Francisco 311 Cases](https://data.sf.gov/d/vw6y-z8j6).
+
+**Sample:** 1,000 source rows (996 accepted after validation), retrieved on 2026-11-15. All requests in this extract were opened on **September 1, 2024, between 00:00 and 14:15**; it does *not* cover the full month or represent citywide performance. Two accepted cases have no observed closure date.
+
+### 1. Service request volume
+
+![Horizontal bar chart of the most frequent service categories in a limited September 1, 2024 San Francisco 311 sample](docs/images/service_volume.png)
+
+### 2. Closure-time distribution
+
+![Histogram-style grouped bar chart of closure durations for the sampled cases with known outcomes](docs/images/closure_duration.png)
+
+### 3. Seven-day closure rate by category
+
+![Sampled seven-day closure rates by service category with observed closed-case counts, not official SLAs](docs/images/seven_day_closure_rate.png)
+
+**Interpretation:** Descriptive exploratory analysis only. Rates exclude missing closure outcomes, category sample sizes vary, and the seven-day threshold is illustrative — **not an official service-level agreement**. These results must not be generalized to the city's population of service requests. Additional charts are generated locally into the ignored `output/` directory.
+
 ## Run locally
 
 Requires Python 3.11+.
@@ -107,6 +127,6 @@ All three plots include the observed date range and explicitly label the data as
 
 **Important:** The verified first 1,000-record extraction spans only 2024-09-01 00:00–14:15. Do not interpret these plots as citywide trends. Before developing ML, collect data spread across multiple dates, avoid future-data leakage, and define how missing outcomes are handled.
 
-Charts are stored under the ignored `output/` directory, so raw data and generated images are **not automatically published to GitHub**. If you later publish any chart, include its sample limitations prominently.
+The three **sample** charts above are intentionally committed under `docs/images/`. New charts generated locally under the ignored `output/` directory are **not automatically published to GitHub**. The raw CSV and SQLite files remain untracked.
 
 For a visualization-only installation use `python -m pip install -e ".[viz]"`.
