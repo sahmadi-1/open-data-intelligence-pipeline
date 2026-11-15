@@ -130,3 +130,41 @@ All three plots include the observed date range and explicitly label the data as
 The three **sample** charts above are intentionally committed under `docs/images/`. New charts generated locally under the ignored `output/` directory are **not automatically published to GitHub**. The raw CSV and SQLite files remain untracked.
 
 For a visualization-only installation use `python -m pip install -e ".[viz]"`.
+
+
+## Bounded multi-month sampling (v0.3)
+
+The initial 1,000-case sample covers only part of one day. For more time coverage,
+the new **optional manual sampler** requests two fixed dates (7th and 21st) each
+month across 2024: **24 bounded API requests, 250 rows per date, maximum 6,000
+rows**. It stores the six selected non-free-text fields only.
+
+~~~powershell
+git pull --ff-only
+$python = ".\.venv\Scripts\python.exe"
+& $python -m pip install -e ".[dev]"
+& $python -m pytest -q
+
+# Explicitly fetches from DataSF; not run by CI or background services.
+& $python -m open_data_intelligence.sampling
+~~~
+
+This produces `data/sf311_multimonth.csv` and
+`output/sf311_multimonth_manifest.json`. If all 24 queries succeed, analyze
+and chart the new sample separately without overwriting the original results:
+
+~~~powershell
+& $python -m open_data_intelligence.sf311 analyze --input data/sf311_multimonth.csv --db output/sf311_multimonth.sqlite --report output/sf311_multimonth_report.json
+& $python -m open_data_intelligence.charts --input data/sf311_multimonth.csv --output-dir output/charts_multimonth
+~~~
+
+**Limitations:** The dates are purposely selected and each day's rows are the
+earliest requests, not a random or representative citywide sample. The public
+dataset may be revised between runs. No personal addresses, free text, names,
+or precise coordinates are requested. A failed download leaves previous CSV
+and manifest outputs untouched; generated records and charts stay outside Git.
+
+**ML remains pending.** First examine time coverage, class balance, missing
+closures, and a chronological holdout. Any future classifier must use only
+features known at request creation, compare to a baseline, and qualify its
+claims.
