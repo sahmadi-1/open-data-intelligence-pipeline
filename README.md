@@ -225,5 +225,11 @@ Holdout performance (positive class = **closed after seven days**):
 
 **Interpretation:** Logistic regression improves *balanced accuracy and late-case detection* at the expense of overall accuracy and many false positives. **It is not universally better, calibrated for operational deployment, or representative of San Francisco's overall service performance.** These numbers describe a small, purposely sampled retrospective benchmark only. Dataset rows are drawn from the earliest requests on two fixed dates per month, there is only one chronological holdout with six sampled days, unresolved cases are excluded, and the public export may reflect post-submission field edits. No business benefit or deployment readiness is claimed.
 
-The comparison chart is generated locally at `output/ml/benchmark_comparison.png`; it is **not yet committed** to this repository. The JSON report remains local at `output/ml/benchmark.json`. Neither file nor raw data is uploaded automatically.
+### Model-comparison visualization
+
+![Matplotlib comparison of retrospective holdout balanced accuracy, late-class recall, and late-class F1 between the majority baseline and logistic regression](docs/images/ml_benchmark_comparison.png)
+
+**Figure:** Fixed October–December 2024 holdout. The majority baseline misses every late closure; logistic regression identifies 147 of 175 late closures but also falsely flags 244 on-time cases. This purposive sample is not representative of citywide performance and the seven-day threshold is illustrative, not an official SLA.
+
+The figure above was generated with Matplotlib from the locally evaluated 2024 multi-month dataset and committed for portfolio review. The underlying JSON report remains local at `output/ml/benchmark.json`, and raw request data is not included in the repository.
 
